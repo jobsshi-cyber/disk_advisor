@@ -1,0 +1,26 @@
+# 自动规范化换行符
+* text=auto
+
+# 明确指定某些文件强制使用 LF
+*.py text eol=lf
+*.pyi text eol=lf
+*.md text eol=lf
+*.toml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.lock text eol=lf
+*.sh text eol=lf
+
+# Windows 特有的脚本用 CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 二进制文件不处理
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.vhdx binary
+*.zip binary

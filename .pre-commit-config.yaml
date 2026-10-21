@@ -1,0 +1,29 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: Ruff Check
+        entry: uv run ruff check --fix .
+        language: system
+        always_run: true
+        pass_filenames: false
+
+      - id: ruff-format
+        name: Ruff Format
+        entry: uv run ruff format .
+        language: system
+        always_run: true
+        pass_filenames: false
+
+      - id: mypy
+        name: Mypy
+        entry: bash -c 'uv run mypy src'
+        language: system
+        always_run: true
+        pass_filenames: false

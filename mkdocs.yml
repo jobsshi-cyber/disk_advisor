@@ -1,0 +1,21 @@
+site_name: Disk Advisor
+docs_dir: docs
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - navigation.tabs
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+nav:
+  - 首页: index.md
+  - API:
+      - scanner: reference/scanner.md
+      - classifier: reference/classifier.md
+      - reporter: reference/reporter.md

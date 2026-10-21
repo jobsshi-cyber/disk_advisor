@@ -1,0 +1,57 @@
+[project]
+name = "disk-advisor"
+version = "0.1.0"
+description = "只读磁盘扫描顾问：识别垃圾与大文件，给出清理和迁移建议"
+readme = "README.md"
+authors = [
+    { name = "jobsshi-cyber", email = "327523561+jobsshi-cyber@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+disk-advisor = "disk_advisor.main:main"
+
+[build-system]
+requires = ["uv_build>=0.13.0,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "pre-commit>=4.0.0",
+    "pytest>=8.3.0",
+    "pytest-cov>=6.0.0",
+    "hypothesis>=6.122.0",
+]
+docs = [
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.27.0",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]   # 错误、pyflakes、isort、pyupgrade、bugbear、simplify
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+files = ["src"]
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=disk_advisor",
+    "--cov-report=term-missing",
+    # "--cov-fail-under=80",   # 测试写够后再启用
+]

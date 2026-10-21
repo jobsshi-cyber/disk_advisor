@@ -28,3 +28,4 @@ build/
 # IDE 配置
 .vscode/
 .idea/
+disk_report.html

@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "运行 Disk Advisor",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "disk_advisor.main",
+            "console": "integratedTerminal"
+        }
+    ]
+}

@@ -1,36 +1,24 @@
 set shell := ["bash", "-uc"]
 
-# 安装所有依赖（含 dev 和 docs）
-install:
-    uv sync --all-groups
-    uv run pre-commit install
-
-# 格式化 + 自动修复
+# 格式化代码（自动修复）
 fmt:
     uv run ruff format .
     uv run ruff check --fix .
 
-# 只检查，不修改
+# 静态检查（不修改文件，仅检查）
 lint:
-    uv run ruff format --check .
+    @echo "👉 正在运行 Ruff Check..."
     uv run ruff check .
+    @echo "👉 正在运行 Ruff Format Check..."
+    uv run ruff format --check .
+    @echo "👉 正在运行 Mypy 类型检查..."
     uv run mypy src
 
-# 跑测试（带覆盖率）
+# 运行测试
 test:
+    @echo "👉 正在运行 Pytest 测试与覆盖率..."
     uv run pytest
 
-# 快速检查：格式 → lint → 测试
-check: fmt lint test
-
-# 启动文档本地预览
-docs:
-    uv run mkdocs serve
-
-# 构建静态文档
-docs-build:
-    uv run mkdocs build
-
-# 清理缓存
-clean:
-    rm -rf .venv .pytest_cache .mypy_cache .ruff_cache site .coverage
+# 🚀 一键全量检查：执行你要求的所有检查（不改动代码）
+check: lint test
+    @echo "✅ 所有检查全部通过！可以安全提交。"

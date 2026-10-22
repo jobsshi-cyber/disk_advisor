@@ -1,8 +1,8 @@
 import argparse
 
-from .classifier import refine_risk
-from .reporter import write_html_report
-from .scanner import scan_tree
+from disk_advisor.classifier import refine_risk
+from disk_advisor.reporter import write_html_report
+from disk_advisor.scanner import scan_tree
 
 
 def main() -> None:
@@ -23,7 +23,7 @@ def main() -> None:
         print(f"扫描完成，报告已生成：{args.output}")
     else:
         # 否则，默认启动图形界面
-        from .gui import start_gui
+        from disk_advisor.gui import start_gui
 
         start_gui()
 

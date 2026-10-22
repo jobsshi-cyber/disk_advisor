@@ -1,5 +1,7 @@
+import ctypes
 import os
 import shutil
+import sys
 import threading
 import tkinter as tk
 from collections.abc import Callable
@@ -9,9 +11,9 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 from typing import Any
 
-from .classifier import refine_risk
-from .reporter import write_html_report
-from .scanner import FileRecord, scan_tree
+from disk_advisor.classifier import refine_risk
+from disk_advisor.reporter import write_html_report
+from disk_advisor.scanner import FileRecord, scan_tree
 
 FORBIDDEN_MOVE_EXT = {".dll", ".exe", ".sys", ".drv", ".vhd", ".vhdx"}
 
@@ -23,8 +25,6 @@ class ProgressWindow:
         self.win = tk.Toplevel(parent)
         self.win.title(title)
         self.win.geometry("400x100")
-        self.win.transient(parent)
-        self.win.grab_set()
         self.win.resizable(False, False)
         self.win.protocol("WM_DELETE_WINDOW", lambda: None)  # 禁止关闭
 
@@ -61,8 +61,6 @@ class SelectionWindow:
         self.win = tk.Toplevel(parent)
         self.win.title("选择要处理的项目")
         self.win.geometry("900x600")
-        self.win.transient(parent)
-        self.win.grab_set()
 
         self.notebook: Any = ttk.Notebook(self.win)
         self.notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
@@ -92,6 +90,11 @@ class SelectionWindow:
         ttk.Button(btn_frame, text="全选", command=self.select_all).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="全不选", command=self.select_none).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="执行选中操作", command=self.execute).pack(side=tk.RIGHT, padx=5)
+        self.win.protocol("WM_DELETE_WINDOW", self.on_close)
+
+    def on_close(self) -> None:
+        self.win.destroy()
+        self.parent.deiconify()
 
     def process_data(self) -> None:
         junk_files = [r for r in self.records if r.category == "junk"]
@@ -140,7 +143,7 @@ class SelectionWindow:
                 "", tk.END, values=("☑", r.path, f"{size_mb:.1f} MB", "建议迁移")
             )
 
-    def toggle_check(self, event: tk.Event[tk.Misc], tree: Any) -> None:
+    def toggle_check(self, event: tk.Event, tree: Any) -> None:
         """点击第一列切换勾选状态"""
         region = tree.identify("region", event.x, event.y)
         if region == "cell":
@@ -347,7 +350,42 @@ class DiskAdvisorApp:
         threading.Thread(target=worker, daemon=True).start()
 
 
+def check_single_instance() -> bool:
+    """检查是否已经有实例在运行。如果在运行，则唤醒它并返回 False。"""
+    # 使用 Windows API 创建/打开一个名为 "DiskAdvisor_SingleInstance_Mutex" 的互斥量
+    mutex_name = "DiskAdvisor_SingleInstance_Mutex"
+
+    # 仅针对 Windows 平台做单实例限制
+    if sys.platform == "win32":
+        # CreateMutexW 返回句柄；如果已存在，会返回已有句柄
+        # 且 GetLastError 为 183 (ERROR_ALREADY_EXISTS)
+        kernel32 = ctypes.windll.kernel32
+        _mutex = kernel32.CreateMutexW(None, False, mutex_name)
+        last_error = kernel32.GetLastError()
+
+        if last_error == 183:  # ERROR_ALREADY_EXISTS
+            # 尝试找到已经存在的窗口，并把它提到最前面
+            user32 = ctypes.windll.user32
+            hwnd = user32.FindWindowW(None, "磁盘清理顾问")
+            if hwnd:
+                user32.ShowWindow(hwnd, 9)  # 9 = SW_RESTORE (恢复最小化的窗口)
+                user32.SetForegroundWindow(hwnd)  # 置于顶层
+            else:
+                # 找不到窗口（可能在初始化），就简单弹个提示
+                root = tk.Tk()
+                root.withdraw()
+                messagebox.showwarning("提示", "磁盘清理顾问已经在运行中！")
+
+            return False
+
+    return True
+
+
 def start_gui() -> None:
+    # 在创建主窗口之前，先检查是否重复运行
+    if not check_single_instance():
+        sys.exit(0)
+
     root = tk.Tk()
     _app = DiskAdvisorApp(root)
     root.mainloop()
